@@ -1,0 +1,9 @@
+# Normaliza finales de linea. Sin esto, cada build regenera el HTML con CRLF en
+# Windows y el diff aparece completo aunque solo cambie una linea.
+* text=auto eol=lf
+
+# Binarios y generados: sin diff en consola, no aporta nada
+leaflet.js            -diff linguist-vendored
+leaflet.css           -diff linguist-vendored
+catalogo.json         -diff linguist-generated
+recorrido-terremoto.html -diff linguist-generated

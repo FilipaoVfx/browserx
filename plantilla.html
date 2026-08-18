@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Recorrido del desastre — Colombia, 10 de agosto de 2026</title>
+<meta name="description" content="Recorrido guiado por imagen satelital abierta de las zonas afectadas por el sismo M7.4 del 10 de agosto de 2026 en Colombia.">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://titiler.hotosm.org" crossorigin>
+<link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin>
+<link rel="preconnect" href="https://earthquake.usgs.gov" crossorigin>
+<link rel="dns-prefetch" href="https://titiler.hotosm.org">
+<style>/*LEAFLET_CSS*/</style>
+<style>
+:root{
+  --bg:#080B0E; --bg2:#0E141A; --panel:#121A21; --panel2:#182229;
+  --line:#202C36; --line2:#2C3A46;
+  --ink:#E9EEF2; --mut:#8A9AA7; --dim:#5E6E7B;
+  --amber:#F2A65A; --amber2:#FFC98B;
+  --hot:#E4572E; --live:#4ADE80;
+  --shadow:0 8px 32px rgba(0,0,0,.55);
+  --mono:Consolas,"SF Mono",ui-monospace,"Courier New",monospace;
+  --sans:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow:hidden}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:3px}
+
+/* ---- utilidades ---- */
+.hidden{display:none!important}
+.flex{display:flex}.col{flex-direction:column}.wrap{flex-wrap:wrap}
+.ic{align-items:center}.jb{justify-content:space-between}.jc{justify-content:center}
+.g4{gap:4px}.g8{gap:8px}.g12{gap:12px}.g16{gap:16px}.g24{gap:24px}
+.mono{font-family:var(--mono)}
+.up{text-transform:uppercase;letter-spacing:.12em}
+.t11{font-size:11px}.t12{font-size:12px}.t13{font-size:13px}.t14{font-size:14px}
+.b6{font-weight:600}.b7{font-weight:700}
+.mut{color:var(--mut)}.dim{color:var(--dim)}.amber{color:var(--amber)}
+.screen{position:fixed;inset:0}
+.scroll{overflow-y:auto;overscroll-behavior:contain}
+
+/* ---- portada ---- */
+#cover{background:
+    radial-gradient(1100px 620px at 22% -8%,rgba(242,166,90,.16),transparent 62%),
+    radial-gradient(760px 480px at 88% 108%,rgba(228,87,46,.12),transparent 60%),
+    var(--bg);
+  overflow-y:auto;overscroll-behavior:contain}
+.shell{max-width:1120px;margin:0 auto;padding:clamp(28px,6vh,72px) clamp(18px,4vw,40px) 64px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--amber);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.eyebrow i{font-style:normal;color:var(--dim)}
+h1{font-size:clamp(34px,7.2vw,68px);line-height:1.02;font-weight:700;
+  letter-spacing:-.03em;margin:18px 0 0;text-wrap:balance;max-width:15ch}
+.stand{font-size:clamp(15px,2.1vw,19px);color:var(--mut);max-width:60ch;margin-top:18px}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);margin-top:34px;border-radius:2px;overflow:hidden}
+.stat{background:var(--bg2);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-size:26px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:11.5px;color:var(--mut);line-height:1.3}
+
+.sect{margin-top:46px}
+.sect-h{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:18px}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:14px}
+.card{position:relative;border:1px solid var(--line);border-radius:3px;overflow:hidden;
+  background:var(--panel);text-align:left;transition:border-color .18s,transform .18s;display:block;width:100%}
+.card:hover,.card:focus-visible{border-color:var(--amber);transform:translateY(-2px)}
+.card-img{aspect-ratio:4/3;width:100%;background:var(--panel2);position:relative;overflow:hidden}
+.card-img img{width:100%;height:100%;object-fit:cover;display:block;
+  filter:saturate(.85) contrast(1.06);transition:transform .4s}
+.card:hover .card-img img{transform:scale(1.04)}
+.card-n{position:absolute;top:8px;left:8px;font-family:var(--mono);font-size:10.5px;
+  background:rgba(8,11,14,.86);border:1px solid var(--line2);padding:2px 7px;border-radius:2px;color:var(--amber)}
+.card-b{padding:11px 13px 13px;display:flex;flex-direction:column;gap:3px}
+.card-b strong{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.card-b span{font-size:11.5px;color:var(--mut)}
+.card.empty{opacity:.5}
+.card.empty .card-img{display:flex;align-items:center;justify-content:center;
+  background:repeating-linear-gradient(45deg,var(--panel2),var(--panel2) 9px,var(--panel) 9px,var(--panel) 18px)}
+.card.empty .card-img span{font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:.1em}
+
+.cta{margin-top:34px;display:inline-flex;align-items:center;gap:11px;
+  background:var(--amber);color:#14100A;font-weight:700;font-size:16px;
+  padding:14px 26px;border-radius:3px;transition:background .18s}
+.cta:hover{background:var(--amber2)}
+.cta span{font-family:var(--mono);font-size:17px}
+
+.note{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--dim);max-width:78ch;display:flex;flex-direction:column;gap:7px}
+
+/* ---- recorrido ---- */
+#tour{background:var(--bg)}
+#map{position:absolute;inset:0;background:var(--bg2);z-index:0}
+.leaflet-container{background:var(--bg2);font-family:var(--sans)}
+.leaflet-control-attribution{background:rgba(8,11,14,.82)!important;color:var(--dim)!important;
+  font-size:10.5px!important;border-top-left-radius:3px}
+.leaflet-control-attribution a{color:var(--mut)!important}
+.leaflet-bar a{background:var(--panel)!important;color:var(--ink)!important;border-color:var(--line2)!important}
+.leaflet-bar a:hover{background:var(--panel2)!important}
+
+.top{position:absolute;top:0;left:0;right:0;z-index:600;display:flex;align-items:center;
+  gap:14px;padding:12px 16px;
+  background:linear-gradient(180deg,rgba(8,11,14,.95) 0%,rgba(8,11,14,.72) 62%,transparent 100%);
+  pointer-events:none}
+.top>*{pointer-events:auto}
+.iconbtn{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line2);
+  border-radius:3px;background:rgba(18,26,33,.9);transition:border-color .18s,background .18s;flex:0 0 auto}
+.iconbtn:hover{border-color:var(--amber);background:var(--panel2)}
+.iconbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.dots{display:flex;gap:6px;align-items:center}
+.dot{width:26px;height:3px;border-radius:2px;background:var(--line2);transition:background .25s}
+.dot.on{background:var(--amber)}
+.dot.done{background:var(--mut)}
+.tnow{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+
+.live{margin-left:auto;display:flex;align-items:center;gap:7px;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+  background:rgba(18,26,33,.9);border:1px solid var(--line2);padding:6px 10px;border-radius:3px}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--live);flex:0 0 auto}
+.live.on .pulse{animation:pulse 2.4s ease-in-out infinite}
+.live.stale .pulse{background:var(--dim);animation:none}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.78)}}
+
+.panel{position:absolute;left:16px;top:66px;width:340px;max-width:calc(100vw - 32px);
+  z-index:600;background:rgba(18,26,33,.94);border:1px solid var(--line2);border-radius:3px;
+  box-shadow:var(--shadow);backdrop-filter:blur(9px);max-height:calc(100vh - 210px);
+  display:flex;flex-direction:column}
+.panel-h{padding:15px 16px 13px;border-bottom:1px solid var(--line)}
+.panel-h .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--amber)}
+.panel-h h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:5px}
+.panel-h .dep{font-size:12px;color:var(--mut);margin-top:2px}
+.panel-b{padding:14px 16px;font-size:13.5px;color:var(--mut);line-height:1.62;overflow-y:auto}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;padding:12px 16px;
+  border-top:1px solid var(--line);font-size:12px}
+.meta dt{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.meta dd{margin:0;color:var(--ink);font-variant-numeric:tabular-nums}
+.nc{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;
+  border:1px solid var(--line2);color:var(--mut);padding:1px 5px;border-radius:2px;margin-left:5px}
+
+.strip{position:absolute;left:0;right:0;bottom:0;z-index:600;padding:14px 16px 16px;
+  background:linear-gradient(0deg,rgba(8,11,14,.96) 12%,rgba(8,11,14,.6) 68%,transparent 100%);
+  display:flex;align-items:flex-end;gap:12px}
+.thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;flex:1;scrollbar-width:thin}
+.thumbs::-webkit-scrollbar{height:5px}
+.thumbs::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
+.th{flex:0 0 auto;width:104px;border:1px solid var(--line2);border-radius:3px;overflow:hidden;
+  background:var(--panel);transition:border-color .18s;position:relative}
+.th:hover,.th:focus-visible{border-color:var(--amber)}
+.th.on{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+.th img{width:100%;height:66px;object-fit:cover;display:block;background:var(--panel2)}
+.th-c{padding:4px 6px 5px;font-family:var(--mono);font-size:9.5px;color:var(--mut);
+  display:flex;justify-content:space-between;gap:4px}
+.th .tag{position:absolute;top:4px;left:4px;font-family:var(--mono);font-size:9px;
+  background:var(--amber);color:#14100A;padding:1px 4px;border-radius:2px;font-weight:700}
+
+.nav{display:flex;gap:8px;flex:0 0 auto}
+.navbtn{display:flex;align-items:center;gap:8px;padding:10px 15px;border:1px solid var(--line2);
+  border-radius:3px;background:rgba(18,26,33,.92);font-size:13.5px;font-weight:600;transition:border-color .18s}
+.navbtn:hover:not(:disabled){border-color:var(--amber)}
+.navbtn:disabled{opacity:.35;cursor:default}
+.navbtn.main{background:var(--amber);color:#14100A;border-color:var(--amber)}
+.navbtn.main:hover{background:var(--amber2);border-color:var(--amber2)}
+
+/* comparador antes/despues */
+.cmp{position:absolute;z-index:620;left:50%;top:66px;transform:translateX(-50%);
+  background:rgba(18,26,33,.94);border:1px solid var(--line2);border-radius:3px;
+  padding:9px 13px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.cmp label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.cmp input[type=range]{width:150px;accent-color:var(--amber)}
+.cmp .sw{font-family:var(--mono);font-size:10.5px;color:var(--amber)}
+.handle{position:absolute;top:0;bottom:0;width:2px;background:var(--amber);z-index:450;
+  pointer-events:none;box-shadow:0 0 12px rgba(242,166,90,.65)}
+
+/* avisos de degradacion */
+.status{position:absolute;left:16px;bottom:150px;z-index:640;display:flex;flex-direction:column;gap:7px;max-width:340px}
+.msg{background:rgba(18,26,33,.95);border:1px solid var(--line2);border-left:2px solid var(--amber);
+  border-radius:3px;padding:9px 12px;font-size:12.5px;color:var(--mut);box-shadow:var(--shadow)}
+.msg b{color:var(--ink);font-weight:600;display:block;margin-bottom:2px;font-size:13px}
+
+.qk{border-radius:50%;border:1.5px solid rgba(255,255,255,.55)}
+
+@media (max-width:820px){
+  /* barra superior compacta en una sola fila: si envuelve, empuja la tira de
+     miniaturas y termina tapando el boton de volver y el contador */
+  .top{padding:10px 12px;gap:9px;flex-wrap:nowrap}
+  .iconbtn{width:32px;height:32px}
+  .dots{flex:1 1 auto;min-width:0;overflow:hidden}
+  .dot{width:15px}
+  .tnow{flex:0 0 auto;font-size:11px;white-space:nowrap}
+  .live{padding:5px 8px;font-size:9px;white-space:nowrap;flex:0 0 auto;max-width:40vw;overflow:hidden}
+  #liveTxt{overflow:hidden;text-overflow:ellipsis}
+
+  .panel{position:absolute;left:0;right:0;bottom:0;top:auto;width:100%;max-width:none;
+    border-radius:12px 12px 0 0;border-left:0;border-right:0;border-bottom:0;max-height:44vh}
+  .panel-b{max-height:15vh}
+  .strip{position:absolute;bottom:auto;top:60px;background:none;padding:8px 12px;flex-direction:column;align-items:stretch}
+  .thumbs{order:2}
+  .nav{order:1;justify-content:space-between}
+  .navbtn{flex:1;justify-content:center}
+  .th{width:82px}.th img{height:52px}
+  .status{bottom:auto;top:130px;left:12px;right:12px;max-width:none}
+  .cmp{top:auto;bottom:calc(44vh + 12px);width:calc(100% - 24px);justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ PORTADA ============ -->
+<main id="cover" class="screen">
+  <div class="shell">
+    <div class="eyebrow">
+      <span>M 7.4</span><i>·</i><span>10 ago 2026 · 12:34 UTC</span><i>·</i>
+      <span>San José del Palmar, Chocó</span><i>·</i><span>110 km de profundidad</span>
+    </div>
+    <h1>Recorrido del desastre</h1>
+    <p class="stand">Cinco paradas sobre imagen satelital abierta, de las horas siguientes al sismo.
+      Lo que los satélites alcanzaron a ver — y lo que no.</p>
+
+    <div class="stats" id="stats"></div>
+
+    <section class="sect">
+      <h2 class="sect-h">Paradas del recorrido</h2>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <button class="cta" id="start">Iniciar recorrido <span>→</span></button>
+
+    <div class="note" id="note"></div>
+  </div>
+</main>
+
+<!-- ============ RECORRIDO ============ -->
+<div id="tour" class="screen hidden">
+  <div id="map"></div>
+
+  <header class="top">
+    <button class="iconbtn" id="home" aria-label="Volver a la portada" title="Volver a la portada (Esc)">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="dots" id="dots"></div>
+    <div class="tnow mono" id="tnow"></div>
+    <div class="live" id="live" title="Sismos y réplicas desde USGS">
+      <span class="pulse"></span><span id="liveTxt">conectando</span>
+    </div>
+  </header>
+
+  <aside class="panel" id="panel">
+    <div class="panel-h">
+      <div class="sub" id="pSub"></div>
+      <h2 id="pName"></h2>
+      <div class="dep" id="pDep"></div>
+    </div>
+    <div class="panel-b" id="pRelato"></div>
+    <dl class="meta" id="pMeta"></dl>
+  </aside>
+
+  <div class="cmp hidden" id="cmp">
+    <label for="cmpR">Antes</label>
+    <input type="range" id="cmpR" min="0" max="100" value="50" aria-label="Comparar antes y después">
+    <label for="cmpR">Después</label>
+    <span class="sw" id="cmpV">50%</span>
+  </div>
+  <div class="handle hidden" id="handle"></div>
+
+  <div class="status" id="status"></div>
+
+  <div class="strip">
+    <div class="nav">
+      <button class="navbtn" id="prev" aria-label="Parada anterior">← Anterior</button>
+      <button class="navbtn main" id="next" aria-label="Siguiente parada">Siguiente →</button>
+    </div>
+    <div class="thumbs" id="thumbs"></div>
+  </div>
+</div>
+
+<script>/*LEAFLET_JS*/</script>
+<script>/* CATALOGO:INICIO */
+const CATALOGO = {"generado":"","paradas":[],"sin_cobertura":[],"imagenes":[]};
+/* CATALOGO:FIN */</script>
+<script>
+"use strict";
+(function () {
+
+// ---------- datos ----------
+const PARADAS = CATALOGO.paradas || [];
+const IMGS = new Map((CATALOGO.imagenes || []).map(i => [i.id, i]));
+const SIN = CATALOGO.sin_cobertura || [];
+
+// Snapshot de respaldo: si USGS no responde, mostramos esto y lo decimos.
+const SISMOS_FALLBACK = [
+  {mag:7.4, lat:4.8436, lon:-76.2422, t:1786365268125, lugar:"5 km S de San José del Palmar"},
+  {mag:5.0, lat:4.8971, lon:-76.3859, t:1786367890451, lugar:"16 km O de San José del Palmar"},
+  {mag:4.2, lat:4.9,    lon:-76.42,   t:1786463021099, lugar:"11 km ONO de San José del Palmar"},
+  {mag:4.3, lat:4.83,   lon:-76.36,   t:1786632152192, lugar:"13 km OSO de San José del Palmar"},
+  {mag:4.2, lat:6.95,   lon:-73.09,   t:1786839496411, lugar:"11 km SSO de Piedecuesta"}
+];
+const USGS = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson"
+  + "&starttime=2026-08-10&minmagnitude=3.5"
+  + "&minlatitude=1&maxlatitude=8&minlongitude=-78&maxlongitude=-73";
+
+const $ = id => document.getElementById(id);
+// La miniatura viene horneada como data URI. La URL remota queda de respaldo por si
+// alguna no se pudo hornear: nunca al reves, porque compite con las teselas del mapa.
+const thumbDe = img => img.thumb || img.preview || "";
+
+// Imagenes que de verdad aportan a una parada. La toma anterior al sismo mide 34x45 km
+// y cae dentro del bbox de varias paradas, pero en Manizales solo roza el borde sur sin
+// cubrir la ciudad. La portada y el recorrido tienen que contar lo mismo.
+function imagenesDe(p) {
+  const c = L.latLng(p.centro[0], p.centro[1]);
+  return p.imagenes.map(id => IMGS.get(id)).filter(Boolean)
+    .filter(x => !x.pre || bounds(x.bbox).contains(c));
+}
+const bounds = b => L.latLngBounds([[b[1], b[0]], [b[3], b[2]]]);   // OAM: [O,S,E,N]
+const fmtFecha = s => { const [y,m,d] = s.split("-"); return d + "/" + m; };
+
+// ---------- portada ----------
+function pintarPortada() {
+  const total = IMGS.size;
+  const mejor = Math.min.apply(null, [...IMGS.values()].map(i => i.gsd).filter(Boolean));
+  const conPre = [...IMGS.values()].filter(i => i.pre).length;
+
+  $("stats").innerHTML = [
+    [PARADAS.length, "paradas con imagen"],
+    [total, "imágenes satelitales"],
+    [mejor.toFixed(2).replace(".", ",") + " m", "mejor resolución por píxel"],
+    [SIN.length, "ciudades afectadas sin imagen"]
+  ].map(([n, t]) => `<div class="stat"><b>${n}</b><span>${t}</span></div>`).join("");
+
+  const cards = PARADAS.map((p, idx) => {
+    const suyas = imagenesDe(p);
+    const first = suyas[0];
+    const prev = first ? thumbDe(first) : "";
+    return `<button class="card" data-i="${idx}">
+      <div class="card-img">
+        ${prev ? `<img src="${prev}" alt="Vista satelital de ${p.nombre}" decoding="async" width="256" height="192">` : ""}
+        <span class="card-n">${String(idx + 1).padStart(2, "0")}</span>
+      </div>
+      <div class="card-b">
+        <strong>${p.nombre}</strong>
+        <span>${p.subtitulo} · ${suyas.length} ${suyas.length === 1 ? "imagen" : "imágenes"}</span>
+      </div></button>`;
+  }).join("");
+
+  const vacias = SIN.map(s => `<div class="card empty">
+      <div class="card-img"><span>SIN IMAGEN</span></div>
+      <div class="card-b"><strong>${s.nombre}</strong><span>${s.depto} · sin cobertura satelital</span></div>
+    </div>`).join("");
+
+  $("cards").innerHTML = cards + vacias;
+  $("cards").querySelectorAll(".card[data-i]").forEach(b =>
+    b.addEventListener("click", () => abrir(+b.dataset.i)));
+
+  const lics = [...new Set([...IMGS.values()].map(i => i.licencia).filter(Boolean))];
+  $("note").innerHTML =
+    `<span><b style="color:var(--mut)">Imagen:</b> OpenAerialMap (HOTOSM). Licencias: ${lics.join(" · ")}.
+      Las tomas de Vantor son <b style="color:var(--mut)">no comerciales</b>.</span>
+     <span><b style="color:var(--mut)">Sismos:</b> USGS, en vivo. <b style="color:var(--mut)">Base:</b> CARTO y OpenStreetMap.</span>
+     <span>${SIN.map(s => s.nombre).join(" y ")} aparecen en los reportes de afectación pero no tienen
+      ninguna imagen publicada. Se muestran vacías a propósito: la ausencia de dato también es dato.</span>
+     <span class="mono t11 dim">Catálogo del ${(CATALOGO.generado || "").slice(0, 10)} · ${total} imágenes · ${conPre} anterior al sismo</span>`;
+}
+
+// ---------- mapa ----------
+let map, paneBase, capas = [], capaPre = null, iActual = -1, quakeLayer = null;
+const avisos = new Set();
+
+function aviso(clave, titulo, texto) {
+  if (avisos.has(clave)) return;
+  avisos.add(clave);
+  const d = document.createElement("div");
+  d.className = "msg";
+  d.innerHTML = `<b>${titulo}</b>${texto}`;
+  $("status").appendChild(d);
+}
+
+function initMapa() {
+  map = L.map("map", {
+    zoomControl: false, attributionControl: true,   // el control propio va abajo a la derecha
+    preferCanvas: true, zoomAnimation: true, fadeAnimation: true,
+    worldCopyJump: false, minZoom: 5, maxZoom: 21
+  }).setView([4.9, -75.9], 7);   // Leaflet exige una vista antes de aceptar capas
+  L.control.zoom({ position: "bottomright" }).addTo(map);
+
+  const base = L.tileLayer("https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    maxZoom: 20, maxNativeZoom: 19, updateWhenIdle: esMovil(), keepBuffer: esMovil() ? 1 : 2,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a> · Imagen <a href="https://openaerialmap.org">OpenAerialMap</a>'
+  });
+  let baseFallo = 0;
+  base.on("tileerror", () => {
+    if (++baseFallo === 6) aviso("base", "Mapa base degradado",
+      "El proveedor del fondo no responde. La imagen satelital sigue funcionando.");
+  });
+  base.addTo(map);
+
+  map.createPane("oam");   map.getPane("oam").style.zIndex = 350;
+  map.createPane("oamPre"); map.getPane("oamPre").style.zIndex = 360;
+  map.createPane("quakes"); map.getPane("quakes").style.zIndex = 500;
+
+  // handle de diagnostico (util para verificar el estado desde la consola)
+  window.__recorrido = { map, ir, PARADAS, IMGS };
+}
+
+const esMovil = () => window.matchMedia("(max-width:820px)").matches;
+const menosMovimiento = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Encuadre con red de seguridad. flyTo depende de requestAnimationFrame, que el
+// navegador suspende con la pestaña en segundo plano: la animacion nunca avanza y
+// el mapa se queda en la parada anterior. El encuadre es correccion, no decoracion,
+// asi que si a los 1.5s no llegamos al destino lo forzamos sin animar.
+let tEncuadre = null;
+function encuadrar(centro, zoom, animar) {
+  clearTimeout(tEncuadre);
+  if (!animar || menosMovimiento() || document.hidden) {
+    map.setView(centro, zoom, { animate: false });
+    return;
+  }
+  map.flyTo(centro, zoom, { duration: 1.1 });
+  tEncuadre = setTimeout(() => {
+    const c = map.getCenter();
+    const lejos = Math.abs(c.lat - centro[0]) > 1e-4
+               || Math.abs(c.lng - centro[1]) > 1e-4
+               || map.getZoom() !== zoom;
+    if (lejos) map.setView(centro, zoom, { animate: false });
+  }, 1500);
+}
+
+// Reintento con backoff. Repone el MISMO url para no romper la cache de CloudFront.
+function conReintentos(capa) {
+  let fallos = 0;
+  capa.on("tileerror", e => {
+    const t = e.tile;
+    const n = t._reint || 0;
+    if (n < 2) {
+      t._reint = n + 1;
+      const url = t.src;
+      t.src = "";
+      setTimeout(() => { t.src = url; }, 500 * (n + 1));
+    } else if (++fallos === 8) {
+      aviso("titiler", "Imagen parcial",
+        "El servidor de teselas (TiTiler de HOT) está lento o caído. Algunas zonas quedan sin imagen; la navegación sigue.");
+    }
+  });
+  return capa;
+}
+
+function capaDe(img, pane) {
+  return conReintentos(L.tileLayer(img.tms, {
+    pane: pane || "oam",
+    bounds: bounds(img.bbox),
+    maxNativeZoom: img.zmax,
+    maxZoom: 21,
+    minZoom: 9,
+    updateWhenIdle: esMovil(),
+    keepBuffer: esMovil() ? 1 : 2,
+    crossOrigin: false,          // los tiles NO traen CORS: hay que cargarlos como <img> normal
+    className: "oam-tile"
+  }));
+}
+
+function limpiar() {
+  capas.forEach(c => map.removeLayer(c));
+  capas = [];
+  if (capaPre) { map.removeLayer(capaPre); capaPre = null; }
+  $("cmp").classList.add("hidden");
+  $("handle").classList.add("hidden");
+  map.getPane("oamPre").style.clipPath = "";
+}
+
+// ---------- paradas ----------
+function abrir(i) {
+  $("cover").classList.add("hidden");
+  $("tour").classList.remove("hidden");
+  if (!map) { initMapa(); cargarSismos(); }
+  map.invalidateSize();
+  ir(i);
+}
+
+function ir(i) {
+  if (i < 0 || i >= PARADAS.length) return;
+  const primera = iActual === -1;
+  iActual = i;
+  const p = PARADAS[i];
+  limpiar();
+
+  // Encuadrar ANTES de montar capas: asi las teselas se piden ya en el destino
+  // y no se gasta una tanda de peticiones en la posicion anterior.
+  encuadrar(p.centro, p.zoom, !primera);
+
+  const centro = L.latLng(p.centro[0], p.centro[1]);
+  const imgs = imagenesDe(p);
+  const post = imgs.filter(x => !x.pre);
+  const pre = imgs.filter(x => x.pre);
+
+  // Orden de apilado. El bbox de cada COG es el rectangulo que envuelve una huella
+  // rotada, asi que dentro del bbox hay zonas sin dato que TiTiler devuelve en negro
+  // (los tiles son JPEG y no admiten transparencia). Por eso mandamos arriba la imagen
+  // que de verdad cubre el punto de la parada: el centro nunca queda en negro.
+  // A igualdad de cobertura, la mas nitida encima.
+  post.slice().sort((a, b) => {
+    const ca = bounds(a.bbox).contains(centro) ? 1 : 0;
+    const cb = bounds(b.bbox).contains(centro) ? 1 : 0;
+    if (ca !== cb) return ca - cb;      // la que cubre el centro, al final = encima
+    return b.gsd - a.gsd;               // luego, mayor resolucion encima
+  }).forEach(img => {
+    const c = capaDe(img); c.addTo(map); capas.push(c);
+  });
+
+  if (pre.length) {
+    capaPre = capaDe(pre[0], "oamPre").addTo(map);
+    $("cmp").classList.remove("hidden");
+    $("handle").classList.remove("hidden");
+    aplicarSwipe(+$("cmpR").value);
+  }
+
+  pintarPanel(p, imgs);
+  pintarThumbs(imgs);
+  pintarDots(i);
+  $("prev").disabled = i === 0;
+  $("next").textContent = i === PARADAS.length - 1 ? "Volver al inicio" : "Siguiente →";
+  $("tnow").textContent = String(i + 1).padStart(2, "0") + " / " + String(PARADAS.length).padStart(2, "0");
+
+  precargarSiguiente(i + 1);
+}
+
+function pintarPanel(p, imgs) {
+  $("pSub").textContent = p.subtitulo;
+  $("pName").textContent = p.nombre;
+  $("pDep").textContent = p.depto;
+  $("pRelato").textContent = p.relato;
+
+  const gs = imgs.map(i => i.gsd).filter(Boolean);
+  const fechas = [...new Set(imgs.map(i => i.fecha))].sort();
+  const sensores = [...new Set(imgs.map(i => i.sensor).filter(Boolean))];
+  const lics = [...new Set(imgs.map(i => i.licencia).filter(Boolean))];
+  const nc = lics.some(l => /NC/i.test(l));
+
+  $("pMeta").innerHTML = imgs.length ? `
+    <dt>Imágenes</dt><dd>${imgs.length}</dd>
+    <dt>Resolución</dt><dd>${Math.min.apply(null, gs).toFixed(2).replace(".", ",")} m/px</dd>
+    <dt>Captura</dt><dd>${fechas.map(fmtFecha).join(" · ")}</dd>
+    <dt>Sensor</dt><dd>${sensores.join(", ") || "—"}</dd>
+    <dt>Licencia</dt><dd>${lics.join(" / ")}${nc ? '<span class="nc">NO COMERCIAL</span>' : ""}</dd>`
+    : `<dt>Imágenes</dt><dd>Sin cobertura publicada</dd>`;
+}
+
+function pintarThumbs(imgs) {
+  $("thumbs").innerHTML = imgs.map((img, k) => `
+    <button class="th" data-id="${img.id}" data-k="${k}" title="${img.titulo}">
+      ${img.pre ? '<span class="tag">ANTES</span>' : ""}
+      <img src="${thumbDe(img)}" alt="${img.titulo}" decoding="async" width="104" height="66">
+      <span class="th-c"><span>${fmtFecha(img.fecha)}</span><span>${img.gsd.toFixed(2).replace(".", ",")}m</span></span>
+    </button>`).join("");
+
+  $("thumbs").querySelectorAll(".th").forEach(b => b.addEventListener("click", () => {
+    const img = IMGS.get(b.dataset.id);
+    if (!img) return;
+    const bb = bounds(img.bbox);
+    const z = Math.min(map.getBoundsZoom(bb, false, L.point(40, 40)), img.zmax);
+    const c = bb.getCenter();
+    encuadrar([c.lat, c.lng], z, true);
+    $("thumbs").querySelectorAll(".th").forEach(x => x.classList.remove("on"));
+    b.classList.add("on");
+  }));
+}
+
+function pintarDots(i) {
+  $("dots").innerHTML = PARADAS.map((_, k) =>
+    `<span class="dot ${k === i ? "on" : k < i ? "done" : ""}" title="${PARADAS[k].nombre}"></span>`).join("");
+}
+
+// Precarga la tesela central de la siguiente parada. Como las paradas son fijas,
+// esto ademas calienta la cache de CloudFront para el resto de usuarios.
+function precargarSiguiente(i) {
+  const p = PARADAS[i];
+  if (!p) return;
+  const img = p.imagenes.map(id => IMGS.get(id)).filter(Boolean)[0];
+  if (!img || !img.tms) return;
+  const z = Math.min(p.zoom, img.zmax);
+  const [lat, lon] = p.centro;
+  const n = Math.pow(2, z);
+  const x = Math.floor((lon + 180) / 360 * n);
+  const y = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+  const pedir = () => [[x, y], [x + 1, y], [x, y + 1]].forEach(([tx, ty]) => {
+    const im = new Image();
+    im.src = img.tms.replace("{z}", z).replace("{x}", tx).replace("{y}", ty);
+  });
+  "requestIdleCallback" in window ? requestIdleCallback(pedir, { timeout: 2500 }) : setTimeout(pedir, 1200);
+}
+
+// ---------- comparador antes/despues ----------
+function aplicarSwipe(pct) {
+  map.getPane("oamPre").style.clipPath = "inset(0 " + (100 - pct) + "% 0 0)";
+  $("handle").style.left = pct + "%";
+  $("cmpV").textContent = pct + "%";
+}
+
+// ---------- sismos en vivo ----------
+function pintarSismos(evs, envivo, cuando) {
+  if (quakeLayer) map.removeLayer(quakeLayer);
+  quakeLayer = L.layerGroup([], { pane: "quakes" });
+  evs.forEach(e => {
+    const r = Math.max(5, (e.mag - 2.6) * 4.6);
+    const fuerte = e.mag >= 6;
+    L.circleMarker([e.lat, e.lon], {
+      pane: "quakes", radius: r, className: "qk",
+      color: fuerte ? "#FFD9C2" : "rgba(255,255,255,.5)",
+      weight: fuerte ? 2 : 1.2,
+      fillColor: fuerte ? "#E4572E" : "#F2A65A",
+      fillOpacity: fuerte ? .58 : .34
+    }).bindPopup(
+      `<b style="font-size:15px">M ${e.mag.toFixed(1)}</b><br>${e.lugar}<br>` +
+      `<span style="color:#666;font-size:11px">${new Date(e.t).toLocaleString("es-CO")}</span>`
+    ).addTo(quakeLayer);
+  });
+  quakeLayer.addTo(map);
+
+  const l = $("live");
+  l.classList.toggle("on", envivo);
+  l.classList.toggle("stale", !envivo);
+  $("liveTxt").textContent = envivo
+    ? evs.length + " sismos · en vivo"
+    : evs.length + " sismos · " + cuando;
+}
+
+function cargarSismos() {
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), 8000);
+  fetch(USGS, { signal: ctl.signal, cache: "default" })
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(d => {
+      clearTimeout(to);
+      const evs = (d.features || []).map(f => ({
+        mag: f.properties.mag,
+        lat: f.geometry.coordinates[1],
+        lon: f.geometry.coordinates[0],
+        t: f.properties.time,
+        lugar: f.properties.place || ""
+      })).filter(e => e.mag != null);
+      if (!evs.length) throw new Error("sin eventos");
+      pintarSismos(evs, true, "");
+    })
+    .catch(() => {
+      clearTimeout(to);
+      pintarSismos(SISMOS_FALLBACK, false, "datos del 17 ago");
+      aviso("usgs", "Sismos sin conexión en vivo",
+        "USGS no respondió. Se muestra el registro guardado del 17 de agosto.");
+    });
+}
+
+// ---------- eventos ----------
+$("start").addEventListener("click", () => abrir(0));
+$("home").addEventListener("click", volver);
+$("prev").addEventListener("click", () => ir(iActual - 1));
+$("next").addEventListener("click", () => {
+  iActual === PARADAS.length - 1 ? volver() : ir(iActual + 1);
+});
+$("cmpR").addEventListener("input", e => aplicarSwipe(+e.target.value));
+
+function volver() {
+  $("tour").classList.add("hidden");
+  $("cover").classList.remove("hidden");
+}
+
+document.addEventListener("keydown", e => {
+  if ($("tour").classList.contains("hidden")) return;
+  if (e.key === "ArrowRight") { e.preventDefault(); if (iActual < PARADAS.length - 1) ir(iActual + 1); }
+  if (e.key === "ArrowLeft")  { e.preventDefault(); if (iActual > 0) ir(iActual - 1); }
+  if (e.key === "Escape") volver();
+});
+
+// swipe horizontal en movil (ignora gestos sobre el mapa para no pelear con el pan)
+let tx = 0, ty = 0;
+document.addEventListener("touchstart", e => {
+  tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY;
+}, { passive: true });
+document.addEventListener("touchend", e => {
+  if ($("tour").classList.contains("hidden")) return;
+  if (e.target.closest("#map") || e.target.closest(".thumbs")) return;
+  const dx = e.changedTouches[0].clientX - tx;
+  const dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > 64 && Math.abs(dx) > Math.abs(dy) * 1.8) {
+    dx < 0 ? (iActual < PARADAS.length - 1 && ir(iActual + 1)) : (iActual > 0 && ir(iActual - 1));
+  }
+}, { passive: true });
+
+window.addEventListener("resize", () => { if (map) map.invalidateSize(); });
+
+// refresco suave de sismos (USGS declara max-age=60; 5 min es de sobra)
+setInterval(() => { if (map && !$("tour").classList.contains("hidden")) cargarSismos(); }, 300000);
+
+// ---------- arranque ----------
+if (!PARADAS.length) {
+  document.body.innerHTML =
+    '<div style="padding:48px;font-family:var(--mono,monospace);color:#E9EEF2;background:#080B0E;height:100%">'
+    + 'Catálogo vacío. Ejecuta <b>python hornear_catalogo.py</b> para poblarlo.</div>';
+} else {
+  pintarPortada();
+}
+})();
+</script>
+</body>
+</html>

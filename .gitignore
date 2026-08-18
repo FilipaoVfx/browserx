@@ -1,0 +1,23 @@
+# Ruido del sistema y editores
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# Dependencias si algun dia se añaden
+node_modules/
+__pycache__/
+*.pyc
+
+# Artefactos temporales del navegador de gstack
+.playwright/
+*.log
+
+# NO se ignoran a proposito:
+#   leaflet.js / leaflet.css  -> dependencia vendorizada, hace el build reproducible
+#   catalogo.json             -> snapshot de OpenAerialMap; sin el hay que volver a
+#                                consultar una API que responde 502 de forma intermitente
+#   recorrido-terremoto.html  -> el entregable; se sirve tal cual desde hosting estatico
