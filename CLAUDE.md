@@ -75,3 +75,21 @@ Instalado con prefijo, los comandos son `/gstack-*`. Útiles aquí:
 - `/gstack-qa` — QA en navegador (funciona en esta máquina, verificado)
 - `/gstack-review` — revisión antes de landear
 - `/gstack-investigate` — depuración con causa raíz
+
+## Skill routing
+
+Cuando la petición encaje con una skill disponible, invócala. Ante la duda, invócala.
+
+- Ideas de producto / brainstorming → /gstack-office-hours
+- Estrategia y alcance → /gstack-plan-ceo-review
+- Arquitectura → /gstack-plan-eng-review
+- Sistema de diseño → /gstack-design-consultation o /gstack-plan-design-review
+- Pipeline completo de revisión → /gstack-autoplan
+- Bugs y errores → /gstack-investigate
+- QA del sitio en navegador → /gstack-qa o /gstack-qa-only
+- Revisión de diff → /gstack-review
+- Pulido visual → /gstack-design-review
+- Ship / deploy / PR → /gstack-ship o /gstack-land-and-deploy
+- Guardar progreso → /gstack-context-save
+- Retomar contexto → /gstack-context-restore
+- Redactar un spec o issue → /gstack-spec
