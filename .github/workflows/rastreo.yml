@@ -1,0 +1,104 @@
+name: rastreo
+
+# Un cron por umbral de frescura. Vercel Hobby solo permite cron diario y
+# Cloudflare Workers da 10 ms de CPU sin Go nativo, asi que Actions es la unica
+# opcion gratuita que sostiene 6 horas.
+#
+# Los disparos de Actions se retrasan en horas pico. Con umbrales de 6 h en
+# adelante es tolerable; por eso los minutos no son :00, donde se acumula la
+# carga de todo el planeta.
+on:
+  schedule:
+    # acopio e inventario: 6 h
+    - cron: "17 */6 * * *"
+    # solicitudes y ofrecimientos: 12 h
+    - cron: "23 */12 * * *"
+    # albergues, vias y dano estructural: 24 h
+    - cron: "31 4 * * *"
+  workflow_dispatch:
+    inputs:
+      fuente:
+        description: "Una fuente concreta, o vacio para todas"
+        required: false
+        type: choice
+        options: ["", corag, pereiraresponde, reporteco, sigad]
+        default: ""
+
+# Dos corridas simultaneas escribirian el mismo `crudo` y competirian por la
+# normalizacion. Se encolan en vez de solaparse.
+concurrency:
+  group: rastreo
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  rastrear:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          # El modulo no tiene dependencias externas: no hay go.sum que cachear,
+          # y apuntar el cache a un archivo inexistente falla el paso.
+          cache: false
+
+      - name: Compilar
+        working-directory: rastreo
+        run: |
+          go vet ./...
+          go build -o rastreo .
+
+      # Sin credenciales: verifica que las cuatro fuentes responden y que el
+      # binario las entiende. Si esto falla, el problema es de la fuente o del
+      # rastreador, no de la escritura.
+      - name: Comprobar fuentes en seco
+        working-directory: rastreo
+        run: ./rastreo --todas --seco
+
+      - name: Rastrear y normalizar
+        working-directory: rastreo
+        env:
+          SUPABASE_URL: https://vhauzajfvlontxziqnaf.supabase.co
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          FUENTE: ${{ inputs.fuente }}
+        run: |
+          if [ -z "$SUPABASE_SERVICE_KEY" ]; then
+            echo "::error::Falta el secret SUPABASE_SERVICE_KEY"
+            echo "Configuralo con: gh secret set SUPABASE_SERVICE_KEY --repo FilipaoVfx/browserx"
+            exit 1
+          fi
+          if [ -n "$FUENTE" ]; then
+            ./rastreo "$FUENTE"
+          else
+            ./rastreo --todas
+          fi
+
+      # El estado por fuente ya quedo en la tabla `fuente`; esto lo deja tambien
+      # en el resumen del run, para no abrir la base solo para saber que paso.
+      - name: Resumen
+        if: always()
+        env:
+          SUPABASE_URL: https://vhauzajfvlontxziqnaf.supabase.co
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_SERVICE_KEY" ]; then exit 0; fi
+          AUTH=(-H "apikey: $SUPABASE_SERVICE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_KEY")
+          {
+            echo "### Estado del indice"
+            echo ""
+            echo "| fuente | ultimo ok | error |"
+            echo "|---|---|---|"
+            curl -s --max-time 30 "${AUTH[@]}" \
+              "$SUPABASE_URL/rest/v1/fuente?select=id,ultimo_ok,ultimo_error" \
+              | jq -r '.[] | "| \(.id) | \(.ultimo_ok // "nunca") | \((.ultimo_error // "-") | .[0:70]) |"'
+            echo ""
+            TOTAL=$(curl -s --max-time 30 "${AUTH[@]}" -H "Prefer: count=exact" -I \
+              "$SUPABASE_URL/rest/v1/item?select=id" \
+              | tr -d '\r' | awk -F/ '/[Cc]ontent-[Rr]ange/ {print $2}')
+            echo "**Items indexados:** ${TOTAL:-desconocido}"
+          } >> "$GITHUB_STEP_SUMMARY"

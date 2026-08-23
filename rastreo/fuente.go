@@ -95,7 +95,10 @@ func celdasSigad() []string {
 		oesteMin, oesteMax = -78.0, -74.0
 		surMin, surMax     = 2.0, 8.0
 		paso               = 1.0
-		zoom               = 10
+		// zoom controla el agrupamiento, no la extension: con el mismo bbox,
+		// zoom 10 devuelve 5 clusters sin id y zoom 18 devuelve los 35 puntos
+		// individuales. Un cluster no se puede indexar.
+		zoom = 18
 	)
 	var urls []string
 	for lon := oesteMin; lon < oesteMax; lon += paso {
