@@ -53,11 +53,16 @@ jobs:
           go vet ./...
           go build -o rastreo .
 
-      # Sin credenciales: verifica que las cuatro fuentes responden y que el
-      # binario las entiende. Si esto falla, el problema es de la fuente o del
-      # rastreador, no de la escritura.
+      # Sin credenciales: verifica que las fuentes responden y que el binario las
+      # entiende. Separa fallo de fuente de fallo de escritura.
+      #
+      # NO bloquea: en la primera corrida programada, un HTTP 502 pasajero de
+      # pereiraresponde hizo fallar este paso y salto la escritura de las otras
+      # tres fuentes, que si habian respondido. El aislamiento por fuente vive en
+      # el binario; esta comprobacion solo informa.
       - name: Comprobar fuentes en seco
         working-directory: rastreo
+        continue-on-error: true
         run: ./rastreo --todas --seco
 
       - name: Rastrear y normalizar

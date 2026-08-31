@@ -16,16 +16,29 @@ immutable
 parallel safe
 set search_path = public, pg_temp
 as $$
-  select nullif(trim(regexp_replace(
-    coalesce(t, ''),
-    '(\+?57[ -]?)?\m3\d{2}[ -]?\d{3}[ -]?\d{4}\M',
-    '[contacto en la fuente]',
-    'g')), '')
+  select nullif(trim(
+    regexp_replace(
+      regexp_replace(
+        regexp_replace(coalesce(t, ''),
+          -- telefonos colombianos, con o sin prefijo de pais
+          '(\+?57[ -]?)?\m3\d{2}[ -]?\d{3}[ -]?\d{4}\M',
+          '[contacto en la fuente]', 'g'),
+        -- handles tras una etiqueta de contacto. En datos reales aparecio
+        -- "Usuario de WhatsApp luiibetancourt" dentro del TITULO, no del objeto
+        -- contact: un identificador que ningun consumidor evita leyendo solo
+        -- los campos publicos.
+        '((?:usuario(?:\s+de)?\s+(?:whatsapp|telegram|instagram)|usuario|contacto)\s*:?\s+)[A-Za-z0-9._-]{3,}',
+        '[contacto en la fuente]', 'gi'),
+      -- arrobas y enlaces de chat
+      '(@[A-Za-z0-9._-]{3,}|wa\.me/\S+|t\.me/\S+)',
+      '[contacto en la fuente]', 'g')
+  ), '')
 $$;
 
 comment on function redactar is
-  'Reemplaza telefonos colombianos por un marcador. El contacto se ve al abrir la
-   ficha en la app original, donde la persona acepto publicarlo.';
+  'Redacta telefonos, handles de mensajeria y enlaces de chat. Es la primera
+   linea; el trigger de item es la red de seguridad. Ningun regex cubre todo:
+   la defensa de fondo es no indexar campos de contacto.';
 
 -- ------------------------------------------------------------------ auxiliares
 
