@@ -13,10 +13,15 @@ import (
 
 // Almacen escribe en Supabase via PostgREST.
 //
-// Usa service_role, que salta RLS. Esa clave NUNCA va al repositorio: vive como
-// secret de GitHub Actions y se lee del entorno. Es tambien la razon por la que
-// `crudo` tiene RLS sin ninguna politica: el payload sin normalizar trae nombres
-// y telefonos que el indice publico nunca debe ver.
+// Usa una secret key (sb_secret_...), no la service_role legacy. La legacy esta
+// acoplada a la clave anon: rotar una obliga a rotar la otra y romperia el SPA.
+// La secret key se rota sola, devuelve 401 si alguien la usa desde un navegador,
+// y admite una por servicio, asi que una fuga no compromete todo.
+//
+// Salta RLS igual, asi que NUNCA va al repositorio: vive como secret de GitHub
+// Actions y se lee del entorno. Es tambien la razon por la que `crudo` tiene RLS
+// sin ninguna politica: el payload sin normalizar trae nombres y telefonos que
+// el indice publico nunca debe ver.
 type Almacen struct {
 	url   string
 	clave string
@@ -25,9 +30,9 @@ type Almacen struct {
 
 func NuevoAlmacen() (*Almacen, error) {
 	url := strings.TrimSuffix(os.Getenv("SUPABASE_URL"), "/")
-	clave := os.Getenv("SUPABASE_SERVICE_KEY")
+	clave := os.Getenv("SUPABASE_SECRET_KEY")
 	if url == "" || clave == "" {
-		return nil, fmt.Errorf("faltan SUPABASE_URL o SUPABASE_SERVICE_KEY en el entorno")
+		return nil, fmt.Errorf("faltan SUPABASE_URL o SUPABASE_SECRET_KEY en el entorno")
 	}
 	return &Almacen{url: url, clave: clave, http: &http.Client{Timeout: 60 * time.Second}}, nil
 }

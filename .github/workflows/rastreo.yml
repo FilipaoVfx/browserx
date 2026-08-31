@@ -64,12 +64,12 @@ jobs:
         working-directory: rastreo
         env:
           SUPABASE_URL: https://vhauzajfvlontxziqnaf.supabase.co
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           FUENTE: ${{ inputs.fuente }}
         run: |
-          if [ -z "$SUPABASE_SERVICE_KEY" ]; then
-            echo "::error::Falta el secret SUPABASE_SERVICE_KEY"
-            echo "Configuralo con: gh secret set SUPABASE_SERVICE_KEY --repo FilipaoVfx/browserx"
+          if [ -z "$SUPABASE_SECRET_KEY" ]; then
+            echo "::error::Falta el secret SUPABASE_SECRET_KEY"
+            echo "Configuralo con: gh secret set SUPABASE_SECRET_KEY --repo FilipaoVfx/browserx"
             exit 1
           fi
           if [ -n "$FUENTE" ]; then
@@ -84,10 +84,10 @@ jobs:
         if: always()
         env:
           SUPABASE_URL: https://vhauzajfvlontxziqnaf.supabase.co
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
         run: |
-          if [ -z "$SUPABASE_SERVICE_KEY" ]; then exit 0; fi
-          AUTH=(-H "apikey: $SUPABASE_SERVICE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_KEY")
+          if [ -z "$SUPABASE_SECRET_KEY" ]; then exit 0; fi
+          AUTH=(-H "apikey: $SUPABASE_SECRET_KEY" -H "Authorization: Bearer $SUPABASE_SECRET_KEY")
           {
             echo "### Estado del indice"
             echo ""
